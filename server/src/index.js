@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const path = require('path');
-const fs = require('fs');
 
 const config = require('./config');
 const { connectDB } = require('./utils/db');
@@ -14,28 +12,13 @@ const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 // 创建Express应用
 const app = express();
 
-// 创建日志目录
-const logDir = path.join(__dirname, '../logs');
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
-
 // 中间件
 app.use(cors(config.cors)); // 启用CORS
 app.use(express.json()); // 解析JSON请求体
 app.use(express.urlencoded({ extended: true })); // 解析URL编码的请求体
 
 // 日志中间件
-if (config.nodeEnv === 'development') {
-  app.use(morgan('dev')); // 开发环境使用简洁日志
-} else {
-  // 生产环境使用详细日志并写入文件
-  const accessLogStream = fs.createWriteStream(
-    path.join(logDir, 'access.log'),
-    { flags: 'a' }
-  );
-  app.use(morgan('combined', { stream: accessLogStream }));
-}
+app.use(morgan(config.nodeEnv === 'development' ? 'dev' : 'combined'));
 
 // API路由
 app.use('/api', apiRoutes);

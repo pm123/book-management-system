@@ -23,28 +23,38 @@ const logger = winston.createLogger({
           info => `${info.timestamp} ${info.level}: ${info.message}`
         )
       )
-    }),
-    // 文件输出 - 错误日志
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    // 文件输出 - 所有日志
-    new winston.transports.File({ 
-      filename: 'logs/combined.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
     })
   ]
 });
 
-// 如果不是生产环境，则添加控制台输出
-if (config.nodeEnv !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple()
-  }));
+// 在非Vercel环境中，可以添加文件日志
+if (process.env.VERCEL !== '1' && config.nodeEnv !== 'production') {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // 尝试创建日志目录
+    const logDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    
+    // 添加文件日志
+    logger.add(new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    }));
+    
+    logger.add(new winston.transports.File({
+      filename: 'logs/combined.log',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    }));
+  } catch (err) {
+    console.error('无法创建日志文件:', err.message);
+  }
 }
 
 module.exports = logger;
