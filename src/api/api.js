@@ -1,8 +1,18 @@
 import axios from 'axios';
 
+// 确定API基础URL
+const getBaseUrl = () => {
+  // 在生产环境中使用相对路径，这样会自动使用当前域名
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+  // 在开发环境中使用完整URL
+  return 'http://localhost:3001/api';
+};
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: 'http://localhost:3001/api',
+  baseURL: getBaseUrl(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

@@ -46,8 +46,8 @@ app.use(notFoundHandler);
 // 错误处理
 app.use(errorHandler);
 
-// 启动服务器
-async function startServer() {
+// 初始化数据库连接和种子数据
+(async () => {
   try {
     // 连接数据库
     await connectDB();
@@ -55,29 +55,30 @@ async function startServer() {
     // 初始化数据库
     await seedDatabase();
     
-    // 启动服务器
-    const PORT = config.port;
-    app.listen(PORT, () => {
-      logger.info(`服务器在端口 ${PORT} 上运行 (${config.nodeEnv}模式)`);
-      logger.info(`API文档: http://localhost:${PORT}/api`);
-    });
+    logger.info(`服务器初始化完成 (${config.nodeEnv}模式)`);
   } catch (err) {
-    logger.error(`服务器启动失败: ${err.message}`);
-    process.exit(1);
+    logger.error(`服务器初始化失败: ${err.message}`);
   }
-}
+})();
 
 // 处理未捕获的异常
 process.on('uncaughtException', (err) => {
   logger.error(`未捕获的异常: ${err.message}`, { stack: err.stack });
-  process.exit(1);
 });
 
 // 处理未处理的Promise拒绝
 process.on('unhandledRejection', (reason, promise) => {
   logger.error(`未处理的Promise拒绝: ${reason}`, { promise });
-  // 不立即退出，让程序继续运行
 });
 
-// 启动服务器
-startServer();
+// 如果在本地环境运行，则启动服务器
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = config.port;
+  app.listen(PORT, () => {
+    logger.info(`服务器在端口 ${PORT} 上运行 (${config.nodeEnv}模式)`);
+    logger.info(`API文档: http://localhost:${PORT}/api`);
+  });
+}
+
+// 导出应用实例供Vercel使用
+module.exports = app;

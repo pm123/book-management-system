@@ -1,106 +1,137 @@
 # 图书管理系统后端服务
 
-这是一个基于Node.js和Express的RESTful API服务，为图书管理系统提供后端支持。
+这是图书管理系统的后端服务，基于Node.js、Express和MongoDB（内存模拟版）构建。
 
 ## 技术栈
 
 - **Node.js**: JavaScript运行时环境
 - **Express**: Web应用框架
-- **MongoDB**: NoSQL数据库
-- **Mongoose**: MongoDB对象模型工具
+- **MongoDB模拟**: 使用内存数据库模拟MongoDB功能
 - **Winston**: 日志记录
-- **Morgan**: HTTP请求日志中间件
 - **CORS**: 跨域资源共享
+- **dotenv**: 环境变量管理
 
 ## 项目结构
 
 ```
 server/
-├── logs/                  # 日志文件目录
-├── src/                   # 源代码
-│   ├── config/            # 配置文件
-│   ├── controllers/       # 控制器
-│   ├── middleware/        # 中间件
-│   ├── models/            # 数据模型
-│   ├── routes/            # 路由
-│   ├── utils/             # 工具函数
-│   └── index.js           # 应用入口
-├── .env                   # 环境变量
-├── package.json           # 项目依赖
-└── README.md              # 项目说明
+├── logs/               # 日志文件
+├── src/                # 源代码
+│   ├── config/         # 配置文件
+│   │   └── index.js    # 主配置文件
+│   ├── controllers/    # 控制器
+│   │   └── book.controller.js  # 图书控制器
+│   ├── middleware/     # 中间件
+│   │   └── error-handler.js    # 错误处理中间件
+│   ├── models/         # 数据模型
+│   │   └── book.model.js       # 图书模型
+│   ├── routes/         # 路由
+│   │   ├── book.routes.js      # 图书路由
+│   │   └── index.js            # 路由入口
+│   ├── utils/          # 工具函数
+│   │   ├── db.js               # 数据库连接
+│   │   ├── logger.js           # 日志工具
+│   │   ├── memory-db.js        # 内存数据库
+│   │   ├── reset-db.js         # 数据库重置
+│   │   └── seed.js             # 数据库种子
+│   └── index.js        # 入口文件
+├── .env                # 环境变量
+└── package.json        # 依赖配置
 ```
 
-## API端点
+## API接口
 
-### 图书管理
+### 图书管理API
 
-| 方法   | 路径                | 描述                     |
-|--------|---------------------|--------------------------|
-| GET    | /api/books          | 获取所有图书（支持分页和排序） |
-| GET    | /api/books/search   | 搜索图书                 |
-| GET    | /api/books/:id      | 获取单本图书详情         |
-| POST   | /api/books          | 添加新图书               |
-| PUT    | /api/books/:id      | 更新图书信息             |
-| DELETE | /api/books/:id      | 删除图书                 |
+| 方法   | 路径                | 描述             | 参数                                      |
+|--------|---------------------|------------------|-------------------------------------------|
+| GET    | /api/books          | 获取图书列表     | page, limit, sortField, sortOrder, query  |
+| GET    | /api/books/:id      | 获取单本图书     | id                                        |
+| POST   | /api/books          | 添加新图书       | title, author, isbn, description, etc.    |
+| PUT    | /api/books/:id      | 更新图书信息     | id, title, author, isbn, description, etc.|
+| DELETE | /api/books/:id      | 删除图书         | id                                        |
 
-## 安装与运行
+## 数据模型
 
-### 前提条件
+### 图书模型
 
-- Node.js (v14+)
-- MongoDB (v4+)
-
-### 安装步骤
-
-1. 克隆项目到本地
-
-2. 安装依赖
-```bash
-cd server
-npm install
-```
-
-3. 配置环境变量
-```bash
-# 复制示例环境变量文件
-cp .env.example .env
-
-# 编辑.env文件，设置MongoDB连接URI等
-```
-
-4. 启动服务
-```bash
-# 开发模式
-npm run dev
-
-# 生产模式
-npm start
-```
-
-5. 服务将在http://localhost:3000/api上运行
-
-## 数据库初始化
-
-服务首次启动时，如果数据库为空，将自动填充示例图书数据。
-
-## 错误处理
-
-服务使用统一的错误处理中间件，所有API错误将返回一致的JSON格式：
-
-```json
+```javascript
 {
-  "error": {
-    "message": "错误信息",
-    "stack": "错误堆栈（仅在开发环境）"
-  }
+  _id: String,            // 图书ID
+  title: String,          // 书名
+  author: String,         // 作者
+  isbn: String,           // ISBN
+  publishDate: Date,      // 出版日期
+  publisher: String,      // 出版社
+  pages: Number,          // 页数
+  description: String,    // 描述
+  coverImage: String,     // 封面图片URL
+  category: String,       // 分类
+  tags: [String],         // 标签
+  price: Number,          // 价格
+  stock: Number,          // 库存
+  createdAt: Date,        // 创建时间
+  updatedAt: Date         // 更新时间
 }
 ```
 
-## 日志
+## 本地开发
 
-- 开发环境：控制台输出简洁日志
-- 生产环境：详细日志写入文件（logs/combined.log和logs/error.log）
+### 前置条件
 
-## 许可证
+- Node.js 16+
+- pnpm（推荐）或npm
 
-MIT
+### 安装依赖
+
+```bash
+pnpm install
+```
+
+### 环境变量
+
+创建`.env`文件，设置以下环境变量：
+
+```
+NODE_ENV=development
+PORT=3001
+CORS_ORIGIN=http://localhost:3000
+```
+
+### 启动服务器
+
+```bash
+pnpm run dev
+```
+
+服务器将在 http://localhost:3001/api 运行。
+
+## 生产部署
+
+### 构建
+
+```bash
+pnpm run build
+```
+
+### 启动生产服务器
+
+```bash
+pnpm start
+```
+
+## 部署到Vercel
+
+本项目已配置为可直接部署到Vercel平台。只需将代码推送到GitHub仓库，然后在Vercel中导入该仓库即可。
+
+Vercel将自动识别项目配置，并按照根目录的`vercel.json`中的设置进行部署。
+
+## 特性
+
+- **RESTful API**: 符合REST设计原则的API
+- **错误处理**: 统一的错误处理机制
+- **日志记录**: 详细的日志记录
+- **CORS支持**: 跨域资源共享支持
+- **内存数据库**: 无需外部数据库依赖
+- **数据持久化**: 数据在服务重启后保持不变
+- **环境配置**: 基于环境的配置管理

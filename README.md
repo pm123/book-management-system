@@ -1,117 +1,117 @@
 # 图书管理系统
 
-基于 Vite + Vue3 + TailwindCSS + NaiveUI 的图书管理系统前端项目。
-
-## 技术栈
-
-- **构建工具**：Vite
-- **前端框架**：Vue 3
-- **状态管理**：Pinia
-- **路由管理**：Vue Router
-- **UI 组件库**：Naive UI
-- **CSS 框架**：TailwindCSS
-- **HTTP 请求**：模拟 API 请求
-
-## 功能特性
-
-- 图书列表展示
-- 图书详情查看
-- 图书添加功能
-- 图书编辑功能
-- 图书删除功能
-- 图书搜索功能
+一个基于Vue3和Node.js的全栈图书管理系统，前端使用Vite + Vue3 + TailwindCSS + NaiveUI，后端使用Node.js + Express + MongoDB。
 
 ## 项目结构
 
 ```
-src/
-├── api/          # API 请求模块
-├── assets/       # 静态资源
-├── components/   # 公共组件
-├── router/       # 路由配置
-├── stores/       # 状态管理
-├── views/        # 页面组件
-├── App.vue       # 根组件
-├── main.js       # 入口文件
-└── style.css     # 全局样式
+book-management-system/
+├── public/                 # 静态资源
+├── server/                 # 后端代码
+│   ├── logs/               # 日志文件
+│   ├── src/                # 源代码
+│   │   ├── config/         # 配置文件
+│   │   ├── controllers/    # 控制器
+│   │   ├── middleware/     # 中间件
+│   │   ├── models/         # 数据模型
+│   │   ├── routes/         # 路由
+│   │   ├── utils/          # 工具函数
+│   │   └── index.js        # 入口文件
+│   ├── .env                # 环境变量
+│   └── package.json        # 依赖配置
+├── src/                    # 前端代码
+│   ├── api/                # API接口
+│   ├── assets/             # 资源文件
+│   ├── components/         # 组件
+│   ├── router/             # 路由
+│   ├── stores/             # 状态管理
+│   ├── views/              # 页面
+│   ├── App.vue             # 根组件
+│   └── main.js             # 入口文件
+├── .env                    # 环境变量
+├── .env.production         # 生产环境变量
+├── index.html              # HTML模板
+├── package.json            # 依赖配置
+├── vite.config.js          # Vite配置
+└── vercel.json             # Vercel部署配置
 ```
 
-## 开发环境设置
+## 功能特性
 
-### 前提条件
+- 图书列表展示（支持分页、排序和搜索）
+- 图书详情查看
+- 添加新图书
+- 编辑图书信息
+- 删除图书
+- 响应式设计，适配移动端和桌面端
 
-- Node.js (推荐 v16 或更高版本)
-- pnpm (推荐) 或 npm 或 yarn
+## API接口
+
+### 图书管理API
+
+| 方法   | 路径                | 描述             | 参数                                      |
+|--------|---------------------|------------------|-------------------------------------------|
+| GET    | /api/books          | 获取图书列表     | page, limit, sortField, sortOrder, query  |
+| GET    | /api/books/:id      | 获取单本图书     | id                                        |
+| POST   | /api/books          | 添加新图书       | title, author, isbn, description, etc.    |
+| PUT    | /api/books/:id      | 更新图书信息     | id, title, author, isbn, description, etc.|
+| DELETE | /api/books/:id      | 删除图书         | id                                        |
+
+## 本地开发
+
+### 前置条件
+
+- Node.js 16+
+- MongoDB（或使用内存数据库）
+- pnpm（推荐）或npm
 
 ### 安装依赖
 
 ```bash
-# 使用 pnpm
+# 安装前端依赖
 pnpm install
 
-# 或使用 npm
-npm install
-
-# 或使用 yarn
-yarn
+# 安装后端依赖
+cd server
+pnpm install
+cd ..
 ```
 
 ### 启动开发服务器
 
 ```bash
-# 使用 pnpm
-pnpm dev
+# 启动后端服务器
+cd server
+pnpm run dev
 
-# 或使用 npm
-npm run dev
-
-# 或使用 yarn
-yarn dev
+# 在另一个终端启动前端服务器
+pnpm run dev
 ```
 
-### 构建生产版本
+前端服务器将在 http://localhost:3000 运行，后端API将在 http://localhost:3001/api 运行。
+
+## 生产部署
+
+### 构建前端
 
 ```bash
-# 使用 pnpm
-pnpm build
-
-# 或使用 npm
-npm run build
-
-# 或使用 yarn
-yarn build
+pnpm run build
 ```
 
-## Docker 部署
+### 部署到Vercel
 
-项目包含 Docker 相关配置，可以使用 Docker 进行部署。
+本项目已配置为可直接部署到Vercel平台。只需将代码推送到GitHub仓库，然后在Vercel中导入该仓库即可。
 
-### 使用 Docker Compose 部署
+Vercel将自动识别项目配置，并按照`vercel.json`中的设置进行部署。
 
-```bash
-# 构建并启动容器
-docker-compose up -d
+## 环境变量
 
-# 停止容器
-docker-compose down
-```
+### 前端环境变量
 
-### 手动构建 Docker 镜像
+- `VITE_API_URL`: API基础URL
 
-```bash
-# 构建镜像
-docker build -t book-management-system .
+### 后端环境变量
 
-# 运行容器
-docker run -d -p 8080:80 --name book-management book-management-system
-```
-
-访问 http://localhost:8080 即可查看应用。
-
-## 项目截图
-
-(项目截图将在完成后添加)
-
-## 许可证
-
-MIT
+- `PORT`: 服务器端口
+- `NODE_ENV`: 环境（development/production）
+- `CORS_ORIGIN`: CORS允许的源
