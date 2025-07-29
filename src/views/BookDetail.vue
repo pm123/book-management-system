@@ -18,7 +18,8 @@ async function fetchBookDetail() {
   
   try {
     const id = route.params.id
-    book.value = await bookStore.fetchBookById(id)
+    const result = await bookStore.fetchBookById(id)
+    book.value = result
   } catch (err) {
     error.value = '获取图书详情失败'
     console.error(err)

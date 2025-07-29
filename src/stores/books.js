@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getBooks, getBookById, addBook, updateBook, deleteBook, searchBooks } from '../api/books'
+import { getBooks, getBookById, addBook, updateBook, deleteBook, searchBooks } from '../api/booksApi'
 
 export const useBookStore = defineStore('books', () => {
   // 状态
@@ -8,13 +8,25 @@ export const useBookStore = defineStore('books', () => {
   const currentBook = ref(null)
   const loading = ref(false)
   const error = ref(null)
+  const pagination = ref({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0
+  })
 
   // 获取所有图书
-  async function fetchBooks() {
+  async function fetchBooks(params = {}) {
     loading.value = true
     error.value = null
     try {
-      books.value = await getBooks()
+      const response = await getBooks(params)
+      books.value = response.data || []
+      
+      // 更新分页信息
+      if (response.pagination) {
+        pagination.value = response.pagination
+      }
     } catch (err) {
       error.value = '获取图书列表失败'
       console.error(err)
@@ -28,7 +40,8 @@ export const useBookStore = defineStore('books', () => {
     loading.value = true
     error.value = null
     try {
-      currentBook.value = await getBookById(id)
+      const response = await getBookById(id)
+      currentBook.value = response.data
       return currentBook.value
     } catch (err) {
       error.value = '获取图书详情失败'
@@ -44,7 +57,8 @@ export const useBookStore = defineStore('books', () => {
     loading.value = true
     error.value = null
     try {
-      const newBook = await addBook(bookData)
+      const response = await addBook(bookData)
+      const newBook = response.data
       books.value.push(newBook)
       return newBook
     } catch (err) {
@@ -61,8 +75,9 @@ export const useBookStore = defineStore('books', () => {
     loading.value = true
     error.value = null
     try {
-      const updatedBook = await updateBook(id, bookData)
-      const index = books.value.findIndex(book => book.id === id)
+      const response = await updateBook(id, bookData)
+      const updatedBook = response.data
+      const index = books.value.findIndex(book => book._id === id || book.id === id)
       if (index !== -1) {
         books.value[index] = updatedBook
       }
@@ -82,7 +97,7 @@ export const useBookStore = defineStore('books', () => {
     error.value = null
     try {
       await deleteBook(id)
-      books.value = books.value.filter(book => book.id !== id)
+      books.value = books.value.filter(book => book._id !== id && book.id !== id)
       return true
     } catch (err) {
       error.value = '删除图书失败'
@@ -98,7 +113,8 @@ export const useBookStore = defineStore('books', () => {
     loading.value = true
     error.value = null
     try {
-      books.value = await searchBooks(query)
+      const response = await searchBooks(query)
+      books.value = response.data || []
       return books.value
     } catch (err) {
       error.value = '搜索图书失败'
@@ -114,6 +130,7 @@ export const useBookStore = defineStore('books', () => {
     currentBook,
     loading,
     error,
+    pagination,
     fetchBooks,
     fetchBookById,
     createBook,

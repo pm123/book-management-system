@@ -86,9 +86,13 @@ async function handleSubmit(e) {
         formData.publicationDate = formatDate(formData.publicationDate)
       }
       
-      await bookStore.createBook(formData)
-      message.success('添加图书成功')
-      router.push('/')
+      const result = await bookStore.createBook(formData)
+      if (result) {
+        message.success('添加图书成功')
+        router.push('/')
+      } else {
+        message.error('添加图书失败')
+      }
     } catch (error) {
       message.error('添加图书失败')
       console.error(error)
@@ -200,8 +204,9 @@ function formatDate(date) {
           </n-form-item>
           
           <n-form-item label="简介" path="description" :span="2">
-            <n-textarea
+            <n-input
               v-model:value="formValue.description"
+              type="textarea"
               placeholder="请输入图书简介"
               :autosize="{ minRows: 3, maxRows: 6 }"
             />

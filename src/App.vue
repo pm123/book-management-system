@@ -63,7 +63,7 @@ function handleMenuSelect(key) {
               <n-icon size="24" class="mr-2 text-blue-600">
                 <book-icon />
               </n-icon>
-              <h1 class="text-xl font-bold text-gray-800">图书管理系统</h1>
+              <h1 class="text-xl font-bold text-gray-800 shrink-0">图书管理系统</h1>
             </div>
             <n-menu
               v-model:value="activeKey"

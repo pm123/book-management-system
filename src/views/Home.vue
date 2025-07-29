@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, h } from 'vue'
+import { ref, onMounted, h, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBookStore } from '../stores/books'
 import { useMessage } from 'naive-ui'
@@ -16,6 +16,22 @@ const message = useMessage()
 
 const searchQuery = ref('')
 const loading = ref(false)
+
+// 分页参数
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  itemCount: 0,
+  pageCount: 0,
+  showSizePicker: true,
+  pageSizes: [10, 20, 30, 50]
+})
+
+// 排序参数
+const sortState = ref({
+  sortField: 'createdAt',
+  sortOrder: 'desc'
+})
 
 // 表格列定义
 const columns = [
@@ -35,12 +51,12 @@ const columns = [
   {
     title: '书名',
     key: 'title',
-    sorter: (a, b) => a.title.localeCompare(b.title)
+    sorter: true
   },
   {
     title: '作者',
     key: 'author',
-    sorter: (a, b) => a.author.localeCompare(b.author)
+    sorter: true
   },
   {
     title: '分类',
@@ -53,7 +69,7 @@ const columns = [
   {
     title: '价格',
     key: 'price',
-    sorter: (a, b) => a.price - b.price,
+    sorter: true,
     render(row) {
       return `¥${row.price.toFixed(2)}`
     }
@@ -71,7 +87,7 @@ const columns = [
               tertiary: true,
               type: 'info',
               size: 'small',
-              onClick: () => viewBook(row.id)
+              onClick: () => viewBook(row._id || row.id)
             },
             { default: () => '查看', icon: () => h('n-icon', null, { default: () => h(ViewIcon) }) }
           ),
@@ -81,7 +97,7 @@ const columns = [
               tertiary: true,
               type: 'warning',
               size: 'small',
-              onClick: () => editBook(row.id)
+              onClick: () => editBook(row._id || row.id)
             },
             { default: () => '编辑', icon: () => h('n-icon', null, { default: () => h(EditIcon) }) }
           ),
@@ -104,7 +120,22 @@ const columns = [
 // 加载图书数据
 async function loadBooks() {
   loading.value = true
-  await bookStore.fetchBooks()
+  
+  const params = {
+    page: pagination.value.page,
+    limit: pagination.value.pageSize,
+    sortField: sortState.value.sortField,
+    sortOrder: sortState.value.sortOrder
+  }
+  
+  await bookStore.fetchBooks(params)
+  
+  // 更新分页信息
+  if (bookStore.pagination) {
+    pagination.value.itemCount = bookStore.pagination.total
+    pagination.value.pageCount = bookStore.pagination.pages
+  }
+  
   loading.value = false
 }
 
@@ -113,6 +144,31 @@ async function searchBooks() {
   loading.value = true
   await bookStore.searchBooksByQuery(searchQuery.value)
   loading.value = false
+}
+
+// 处理分页变化
+function handlePageChange(currentPage) {
+  pagination.value.page = currentPage
+  loadBooks()
+}
+
+// 处理每页条数变化
+function handlePageSizeChange(pageSize) {
+  pagination.value.pageSize = pageSize
+  pagination.value.page = 1
+  loadBooks()
+}
+
+// 处理排序变化
+function handleSorterChange(sorter) {
+  if (sorter) {
+    sortState.value.sortField = sorter.columnKey
+    sortState.value.sortOrder = sorter.order === 'ascend' ? 'asc' : 'desc'
+  } else {
+    sortState.value.sortField = 'createdAt'
+    sortState.value.sortOrder = 'desc'
+  }
+  loadBooks()
 }
 
 // 查看图书详情
@@ -128,7 +184,7 @@ function editBook(id) {
 // 确认删除
 function confirmDelete(book) {
   if (confirm(`确定要删除《${book.title}》吗？`)) {
-    deleteBook(book.id)
+    deleteBook(book._id || book.id)
   }
 }
 
@@ -148,6 +204,13 @@ async function deleteBook(id) {
 // 组件挂载时加载数据
 onMounted(() => {
   loadBooks()
+})
+
+// 监听搜索框变化，当清空时重新加载所有图书
+watch(searchQuery, (newVal) => {
+  if (!newVal) {
+    loadBooks()
+  }
 })
 </script>
 
@@ -183,6 +246,10 @@ onMounted(() => {
         :loading="loading"
         :bordered="false"
         :single-line="false"
+        :pagination="pagination"
+        @update:page="handlePageChange"
+        @update:page-size="handlePageSizeChange"
+        @update:sorter="handleSorterChange"
         striped
       />
     </div>
