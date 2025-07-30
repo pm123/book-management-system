@@ -1,9 +1,11 @@
 # 版本控制
 .git
 .gitignore
+.github
 
 # 依赖目录
 node_modules
+**/node_modules
 dist
 
 # 日志文件
@@ -11,6 +13,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+logs
+*.log
 
 # 编辑器目录和文件
 .idea
@@ -24,12 +28,21 @@ pnpm-debug.log*
 # 本地环境文件
 .env.local
 .env.*.local
+.env.development
 
 # Docker相关文件
-Dockerfile
 docker-compose.yml
 .dockerignore
-nginx.conf
 
 # 测试文件
 coverage
+**/*.spec.js
+**/*.test.js
+test
+tests
+
+# 文档和其他不需要的文件
+docs
+*.md
+LICENSE
+.DS_Store
